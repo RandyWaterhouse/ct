@@ -24,24 +24,16 @@ def determinant(M, mul = 1):
         coefficient in recursive calls
     """
     # base case: if matrix has dimension 1, determinant is trivial:
-    W = len(M)
-    if W == 1:
-        return mul * M[0][0]
+    h = len(M)
+    if h == 1: return mul * M[0][0]
     # matrix is non-trivial, so use Laplace expansion of first row:
-    sign = -1
-    det = 0
-    for i in range(W):
+    sign, det = -1, 0
+    for i in range(h):
         # construct sub-matrix:
-        m = []
-        for j in range(1, W):
-            buff = []
-            for k in range(W):
-                if k != i:
-                    buff.append(M[j][k])
-            m.append(buff)
+        M_sub = [[M[j][k] for k in range(h) if i != k] for j in range(1, h)]
         # add (alternating sign) * (element of first row) * (determinant of sub-matrix):
         sign *= -1
-        det += mul * determinant(m, sign * M[0][i])
+        det += mul * determinant(M_sub, sign * M[0][i])
     return det
 
 def gcd(a, b):
@@ -71,8 +63,8 @@ def modular_inverse(a, m):
         Determine inverse of a modulo m; if a and m are not co-prime,
         modular inverse does not exist and function returns "none"
     """
-    b, x, y = extended_gcd(a, m)
-    return ((1 - m * y) // a) % m if b == 1 else "none"
+    b, s, t = extended_gcd(a, m)
+    return ((1 - m * t) // a) % m if b == 1 else "none"
 
 def vector_matrix_product(v, M, mod):
     """
@@ -86,9 +78,7 @@ def matrix_matrix_product(A, B, mod):
     """
         Determine product of two matrices reducing results modulo "mod"
     """
-    n, m = len(A), len(A[0])
-    p, q = len(B), len(B[0])
-    assert m == p, "Matrix dimensions don't match!"
+    assert len(A[0]) == len(B), "Matrix dimensions don't match!"
     return [[sum(a * b for a, b in zip(A_row, B_col)) % mod for B_col in zip(*B)] for A_row in A]
 
 def transpose_matrix(M):
