@@ -63,8 +63,8 @@ def modular_inverse(a, m):
         Determine inverse of a modulo m; if a and m are not co-prime,
         modular inverse does not exist and function returns "none"
     """
-    b, s, t = extended_gcd(a, m)
-    return ((1 - m * t) // a) % m if b == 1 else "none"
+    g, s, t = extended_gcd(a, m)
+    return ((1 - m * t) // a) % m if g == 1 else "none"
 
 def vector_matrix_product(v, M, mod):
     """
