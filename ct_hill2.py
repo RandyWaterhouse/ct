@@ -1,11 +1,7 @@
-"""
-
-    Example code for c't article on Hill Cipher implementation
+""" Example code for c't article on Hill Cipher implementation
     and Known Plaintext Attack
 
-    by Peter Uelkes
-    
-"""
+    by Peter Uelkes """
 
 ####################################################################
 # required modules:
@@ -13,84 +9,37 @@ import random
 import textwrap
 import itertools
 import math
+import numpy as np
 
 ####################################################################
 # helper functions, not specific to Hill Cipher:
 
 def determinant(M, mul = 1):
-    """
-        Calculate determinant of square matrix by Laplace expansion;
-        optional parameter "mul" is used for passing sign and
-        coefficient in recursive calls
-    """
-    # base case: if matrix has dimension 1, determinant is trivial:
-    h = len(M)
-    if h == 1: return mul * M[0][0]
-    # matrix is non-trivial, so use Laplace expansion of first row:
-    sign, det = -1, 0
-    for i in range(h):
-        # construct sub-matrix:
-        M_sub = [[M[j][k] for k in range(h) if i != k] for j in range(1, h)]
-        # add (alternating sign) * (element of first row) * (determinant of sub-matrix):
-        sign *= -1
-        det += mul * determinant(M_sub, sign * M[0][i])
-    return det
-
-def gcd(a, b):
-    """
-        Determine greatest common divisor of a and b by Euclidian algorithm
-    """
-    while b != 0:
-       b, a = a % b, b
-    return a
-
-def extended_gcd(a, b):
-    """
-        Extended Euclidian Algorithm, needed for determining modular inverse
-    """
-    s, s_old = 0, 1
-    t, t_old = 1, 0
-    r, r_old = b, a
-    while r != 0:
-        q = r_old // r
-        r_old, r = r, r_old - q * r
-        s_old, s = s, s_old - q * s
-        t_old, t = t, t_old - q * t
-    return r_old, s_old, t_old
+    """ Calculate determinant of square matrix """
+    return int(round(np.linalg.det(np.array(M)), 0))
 
 def modular_inverse(a, m):
-    """
-        Determine inverse of a modulo m; if a and m are not co-prime,
-        modular inverse does not exist and function returns "none"
-    """
-    g, s, t = extended_gcd(a, m)
-    return ((1 - m * t) // a) % m if g == 1 else "none"
+    """ Determine inverse of a modulo m; if a and m are not co-prime,
+        modular inverse does not exist and function returns "none" """
+    return pow(a, -1, m)
 
 def vector_matrix_product(v, M, mod):
-    """
-        Determine product of row vector v from left into
-        matrix M, reducing results modulo "mod"
-    """
+    """ Determine product of row vector v from left into
+        matrix M, reducing results modulo "mod" """
     assert len(v) == len(M), "Matrix/vector dimensions don't match!"
     return [sum([v[r] * M[r][c] for r in range(len(v))]) % mod for c in range(len(M[0]))]
 
 def matrix_matrix_product(A, B, mod):
-    """
-        Determine product of two matrices reducing results modulo "mod"
-    """
+    """ Determine product of two matrices reducing results modulo "mod" """
     assert len(A[0]) == len(B), "Matrix dimensions don't match!"
     return [[sum(a * b for a, b in zip(A_row, B_col)) % mod for B_col in zip(*B)] for A_row in A]
 
 def transpose_matrix(M):
-    """
-        Transpose matrix M (reflect elements at main diagonal)
-    """
+    """ Transpose matrix M (reflect elements at main diagonal) """
     return [list(i) for i in zip(*M)]
 
 def adjugate_matrix(M):
-    """
-        Determine adjugate matrix (transpose of cofactor matrix) for matrix M
-    """
+    """ Determine adjugate matrix (transpose of cofactor matrix) for matrix M """
     n = len(M)
     # alternating signs:
     A = [[(-1)**(r + c) for c in range(n)] for r in range(n)]
@@ -104,49 +53,36 @@ def adjugate_matrix(M):
     return transpose_matrix(A)
 
 def get_inverse_matrix_mod(M, mod):
-    """
-        Determine inverse of matrix M modulo "mod" by
-        Adjugate Method, i.e. use fact that M * Adjugate(M) == det(M) * I_n
-    """
+    """ Determine inverse of matrix M modulo "mod" by
+        Adjugate Method, i.e. use fact that M * Adjugate(M) == det(M) * I_n """
     # get modular inverse of determinant:
-    det = determinant(M) % mod
-    det_inv = modular_inverse(det, mod)
+    det_inv = modular_inverse(determinant(M) % mod, mod)
     # determine adjugate matrix:
-    Ad = adjugate_matrix(M)
-    n = len(M)
+    Ad, n = adjugate_matrix(M), len(M)
     # construct inverse matrix:
     return [[(det_inv * Ad[r][c]) % mod for c in range(n)] for r in range(n)]
 
 def pretty_print_matrix(M):
-    """
-        Neatly print matrix M, use fixed with of three (adapt if
-        need for really large alphabet arises)
-    """
-    n = len(M[0])
-    frmt = "%3d" * n
+    """ Neatly print matrix M, use fixed with of three (adapt if
+        need for really large alphabet arises) """
+    frmt = "%3d" * len(M[0])
     for row in M:
         print(frmt % tuple(row))
-
 
 #############################################################################
 
 class HillCipher:
-
-    """
-        Implementation of Hill Cipher. Use convention of multiplying
-        plaintext vector from left into key matrix K.
-    """
+    """ Implementation of Hill Cipher. Use convention of multiplying
+        plaintext vector from left into key matrix K. """
 
     # alphabet, use standard english alphabet as default, modify if needed:
     alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     
     def __init__(self, n = 4, K = None):
-        """
-            Init instance of HillCipher class; parameters:
+        """ Init instance of HillCipher class; parameters:
             n: Dimension of matrix (default = 4)
             K: Key matrix (default = None, if no matrix is given,
-                                     a ramdon one will be created)            
-        """
+                                     a ramdon one will be created) """
 
         # Class variables, matching letters to numbers and vice versa:
         HillCipher.N = len(HillCipher.alphabet)
@@ -159,8 +95,7 @@ class HillCipher:
         self.n = n
         if K:
             # key matrix provided as a parameter:
-            self.K = K
-            self.det = determinant(self.K)
+            self.K, self.det = K, determinant(K)
         else:
             # no key matrix provided, so generate one randomly:
             while True:
@@ -170,32 +105,25 @@ class HillCipher:
                 self.K = [[random.randint(1, self.N - 1) for _ in range(n)] \
                           for __ in range(n)]
                 self.det = determinant(self.K)
-                if gcd(self.det, self.N) == 1:
-                    break
+                if math.gcd(self.det, self.N) == 1: break
                 
         # determine inverse matrix:
-        if not gcd(self.det, self.N) == 1:
+        if not math.gcd(self.det, self.N) == 1:
             print("WARNING: matrix is not invertible mod %d!" % N)
             self.K_inv = None
         else:
-            self.K_inv = get_inverse_matrix_mod(self.K, self.N)      
+            self.K_inv = get_inverse_matrix_mod(self.K, self.N)
 
     def get_K(self):
-        """
-            Getter method for key matrix K
-        """
+        """ Getter method for key matrix K """
         return self.K
 
     def get_K_inv(self):
-        """
-            Getter method for inverse key matrix K_inv
-        """
+        """ Getter method for inverse key matrix K_inv """
         return self.K_inv
 
     def encrypt(self, msg):
-        """
-            Encrypt message (given by parameter "msg") with Hill cipher 
-        """
+        """ Encrypt message (given by parameter "msg") with Hill cipher """
         cipher = ""
         # blockwise encryption:
         for block in textwrap.wrap(msg, self.n):
@@ -212,15 +140,13 @@ class HillCipher:
         return cipher
 
     def decrypt(self, cipher):
-        """
-            Decrypt cipher (given by parameter "cipher") with Hill cipher;
-            assume that cipher length is multiple of matrix dimension n
-        """
+        """ Decrypt cipher (given by parameter "cipher") with Hill cipher;
+            assume that cipher length is multiple of matrix dimension n """
         if not self.K_inv:
             print("Sorry, no inverse encryption matrix available!")
             return 
-        msg = ""
         # blockwise decryption:
+        msg = ""
         for block in textwrap.wrap(cipher, self.n):
             # decrypt one ciphertext block, convert letters to numbers:
             numbers = [self.letter2number[b] for b in block]
@@ -232,17 +158,12 @@ class HillCipher:
             msg += ''.join(decrypted_letters)
         return msg
     
-
 #############################################################################
 
-"""
-   Driver functions for examples from two articles in magazine c't
-"""
+""" Driver functions for examples from two articles in magazine c't """
 
 def part1_secret_agent():
-    """
-        example from first article: secret agent in an foreign land
-    """
+    """ example from first article: secret agent in an foreign land """
     HC = HillCipher(4, [[20, 2, 1, 21], [16, 11, 25, 20], [14, 18, 7, 12], [25, 22, 23, 4]])
     print("Example from first article:\n===========================\nkey matrix:")
     pretty_print_matrix(HC.get_K())
@@ -256,9 +177,7 @@ def part1_secret_agent():
     print("recovered message: ", msg_recov)
     
 def part2_known_plaintext_attack():
-    """
-        example from second article: recovering the key matrix by known plaintext attack
-    """
+    """ example from second article: recovering the key matrix by known plaintext attack """
     print("\n####################################################################")
     print("\nExample from second article:\n============================")
     n = 4
@@ -294,7 +213,7 @@ def part2_known_plaintext_attack():
         P_num = [[HC.letter2number[c] for c in T[i]] for i in comb]
         # is P_num invertible mod 26 ?
         det = determinant(P_num)
-        if gcd(det, 26) == 1:
+        if math.gcd(det, 26) == 1:
             # yeah, it's invertible, so recover K:
             # inverse plaintext matrix:
             P_num_inv = get_inverse_matrix_mod(P_num, 26)
@@ -306,7 +225,7 @@ def part2_known_plaintext_attack():
             K_attack = matrix_matrix_product(P_num_inv, C_num, 26)
             # make sure it's the correct key matrix:
             assert K == K_attack
-            print("Successful recovery of key matrix from plaintext fragments:", ' '.join(P_txt))
+            #print("Successful recovery of key matrix from plaintext fragments:", ' '.join(P_txt))
            
 # Driver code:            
 if __name__ == "__main__":
