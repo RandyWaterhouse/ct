@@ -96,6 +96,11 @@ class HillCipher:
         if K:
             # key matrix provided as a parameter:
             self.K, self.det = K, determinant(K)
+            # check if invertible:
+            if not math.gcd(self.det, self.N) == 1:
+                print("WARNING: matrix is not invertible mod %d!" % N)
+                self.K_inv = None
+                return
         else:
             # no key matrix provided, so generate one randomly:
             while True:
@@ -108,11 +113,7 @@ class HillCipher:
                 if math.gcd(self.det, self.N) == 1: break
                 
         # determine inverse matrix:
-        if not math.gcd(self.det, self.N) == 1:
-            print("WARNING: matrix is not invertible mod %d!" % N)
-            self.K_inv = None
-        else:
-            self.K_inv = get_inverse_matrix_mod(self.K, self.N)
+        self.K_inv = get_inverse_matrix_mod(self.K, self.N)
 
     def get_K(self):
         """ Getter method for key matrix K """
@@ -225,7 +226,7 @@ def part2_known_plaintext_attack():
             K_attack = matrix_matrix_product(P_num_inv, C_num, 26)
             # make sure it's the correct key matrix:
             assert K == K_attack
-            #print("Successful recovery of key matrix from plaintext fragments:", ' '.join(P_txt))
+            print("Successful recovery of key matrix from plaintext fragments:", ' '.join(P_txt))
            
 # Driver code:            
 if __name__ == "__main__":
