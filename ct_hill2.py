@@ -62,9 +62,10 @@ def get_inverse_matrix_mod(M, mod):
     # construct inverse matrix:
     return [[(det_inv * Ad[r][c]) % mod for c in range(n)] for r in range(n)]
 
-def pretty_print_matrix(M):
+def pretty_print_matrix(M, txt = ""):
     """ Neatly print matrix M, use fixed with of three (adapt if
         need for really large alphabet arises) """
+    print("\n" + txt)
     frmt = "%3d" * len(M[0])
     for row in M:
         print(frmt % tuple(row))
@@ -166,10 +167,8 @@ class HillCipher:
 def part1_secret_agent():
     """ example from first article: secret agent in an foreign land """
     HC = HillCipher(4, [[20, 2, 1, 21], [16, 11, 25, 20], [14, 18, 7, 12], [25, 22, 23, 4]])
-    print("Example from first article:\n===========================\nkey matrix:")
-    pretty_print_matrix(HC.get_K())
-    print("\ninverse key matrix:")
-    pretty_print_matrix(HC.get_K_inv())
+    pretty_print_matrix(HC.get_K(), "Example from first article:\n===========================\nkey matrix:")
+    pretty_print_matrix(HC.get_K_inv(), "inverse key matrix:")
     msg = "TREFFE KONTAKTPERSON UM DREI UHR IM STADTPARK"
     print("\noriginal msg:      ", msg)
     cipher = HC.encrypt(msg.replace(' ', ''))
@@ -185,18 +184,14 @@ def part2_known_plaintext_attack():
     random.seed(2718281828459045)
     HC = HillCipher(n)
     K = HC.get_K()
-    print("\nkey matrix:", K)
-    pretty_print_matrix(K)
+    pretty_print_matrix(K, "key matrix:")
     K_inv = HC.get_K_inv()
-    print("\ninverse key matrix:")
-    pretty_print_matrix(K_inv)
-
+    pretty_print_matrix(K_inv, "inverse key matrix:")
     plain = "Ein Teil von jener Kraft, Die stets das Böse will und stets das Gute schafft."
     print("\nplaintext for known plaintext attack:", plain)
     msg = "EINTEILVONJENERKRAFTDIESTETSDASBOESEWILLUNDSTETSDASGUTESCHAFFT"
     T = textwrap.wrap(msg, n)
-    while len(T[-1]) < n:
-        T[-1] += 'X'
+    while len(T[-1]) < n: T[-1] += 'X'
     print("\noriginal msg:      ", ' '.join(T))
     cipher = HC.encrypt(msg.replace(' ', ''))
     C = textwrap.wrap(cipher, n)
