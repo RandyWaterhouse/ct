@@ -3,16 +3,14 @@
 
     by Peter Uelkes """
 
-####################################################################
-# required modules:
+""" required modules """
 import random
 import textwrap
 import itertools
 import math
 import numpy as np
 
-####################################################################
-# helper functions, not specific to Hill Cipher:
+""" helper functions, not specific to Hill Cipher """
 
 def determinant(M, mul = 1):
     """ Calculate determinant of square matrix """
@@ -70,7 +68,7 @@ def pretty_print_matrix(M, txt = ""):
     for row in M:
         print(frmt % tuple(row))
 
-#############################################################################
+""" Hill cipher class """
 
 class HillCipher:
     """ Implementation of Hill Cipher. Use convention of multiplying
@@ -160,9 +158,7 @@ class HillCipher:
             msg += ''.join(decrypted_letters)
         return msg
     
-#############################################################################
-
-""" Driver functions for examples from two articles in magazine c't """
+""" Driver functions for examples from articles in magazine c't """
 
 def part1_secret_agent():
     """ example from first article: secret agent in an foreign land """
