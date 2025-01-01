@@ -4,10 +4,7 @@
     by Peter Uelkes """
 
 """ required modules """
-import random
-import textwrap
-import itertools
-import math
+import random, textwrap, itertools, math
 import numpy as np
 
 """ helper functions, not specific to Hill Cipher """
