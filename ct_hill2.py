@@ -11,7 +11,7 @@ import numpy as np
 
 """ helper functions, not specific to Hill Cipher """
 
-def determinant(M, mul = 1):
+def determinant(M):
     """ Calculate determinant of square matrix """
     return int(round(np.linalg.det(np.array(M)), 0))
 
