@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """ Example code for c't article on Hill Cipher implementation
     and Known Plaintext Attack
 
