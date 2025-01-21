@@ -43,7 +43,7 @@ def adjugate_matrix(M):
     # multiply each (+-1) element with determinant of sub-matrix:
     for r in range(n):
         for c in range(n):
-            sub_matrix = [[M[c2][r2] for c2 in range(n) if r2 != c and c2 != r] for r2 in range(n)]
+            sub_matrix = [[M[r2][c2] for c2 in range(n) if r2 != r and c2 != c] for r2 in range(n)]
             sub_matrix = [row for row in sub_matrix if len(row) > 0]
             A[r][c] *= determinant(sub_matrix)
     # finally transpose:
